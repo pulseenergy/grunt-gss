@@ -1,4 +1,4 @@
-# grunt-gss v0.5.1
+# grunt-gss v0.6.0
 
 > Save your Google Spreadsheets as CSV or JSON.
 
@@ -52,6 +52,7 @@ A handy tool for [CouchDB](http://couchdb.apache.org/#download)-backed apps like
   * string - `toString()`
   * undefined - field and value will be removed from result
   * or a callback function accepting `(val, rowObj)` and returning whatever can be parsed by JSON.parse
+ * `wrap` output string will be passed to this callback and the return will be saved
 
 *Note 1: If both `typeDetection` and `typeMapping` are `true`, `typeDetection` will be executed first, and followed by `typeMapping` overriding the outcome. That is, value passing to`typeMapping` callback may not be `string`.*
 
@@ -96,6 +97,7 @@ example2:
   options:
     clientId: '785010223027.apps.googleusercontent.com'
     clientSecret: 'nwQ2UedRysgbNZl6jE3I77Ji'
+    wrap: (str) -> 'save me instead'
   files:
     'Sheet1.csv': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1428256717',
     'Sheet2.csv': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1369557937',
@@ -129,6 +131,7 @@ products3:
 
 ## Release History
 
+ * 2014-07-24   v0.6.0   Add option "wrap" to process output before save, and [pull request #3](https://github.com/h0ward/grunt-gss/pull/3)
  * 2014-07-19   v0.5.1   Create `col` on the go by `type` callback
  * 2014-07-19   v0.5.0   Add type conversion callback. Remove 2d array support
  * 2014-07-14   v0.4.6   Fetch key & gid from new gss urls, dump more useful log
