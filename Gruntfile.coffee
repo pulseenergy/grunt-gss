@@ -44,6 +44,7 @@ module.exports = (grunt) ->
         options:
           clientId: '785010223027.apps.googleusercontent.com'
           clientSecret: 'nwQ2UedRysgbNZl6jE3I77Ji'
+          wrap: (str) -> 'save me instead'
         files:
           'Sheet1.csv': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1428256717'
           'Sheet2.csv': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1369557937'

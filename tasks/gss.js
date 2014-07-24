@@ -224,15 +224,8 @@ module.exports = function(grunt) {
         var arr, out;
         grunt.verbose.write('getSheet...');
         grunt.log.debug("" + (JSON.stringify(r.body)) + "...");
-        if (!r.body) {
-          grunt.log.error('empty');
-        } else if (!f.opts.saveJson) {
-          if (!f.opts.wrap) {
-            grunt.file.write(f.dest, r.body);
-          } else {
-            grunt.file.write(f.dest, f.opts.wrap(r.body));
-          }
-        } else {
+        out = r.body;
+        if (f.opts.saveJson) {
           grunt.log.write('csv2json...');
           out = '';
           arr = JSON.parse(csv2json(r.body));
@@ -250,13 +243,17 @@ module.exports = function(grunt) {
           } else {
             out = JSON.stringify(arr);
           }
-          if (!f.opts.wrap) {
-            grunt.file.write(f.dest, out);
-          } else {
-            grunt.file.write(f.dest, f.opts.wrap(out));
-          }
         }
-        grunt.log.ok();
+        if (f.opts.wrap) {
+          grunt.log.write('wrap...');
+          out = f.opts.wrap(out);
+        }
+        if (out) {
+          grunt.file.write(f.dest, out);
+          grunt.log.ok();
+        } else {
+          grunt.log.error('empty');
+        }
         if (files.length) {
           return next(files.shift());
         } else {
