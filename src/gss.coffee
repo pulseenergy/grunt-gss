@@ -160,10 +160,10 @@ module.exports = (grunt) ->
       f.opts.clientSecret, 'http://localhost:4477/').then (r) ->
         grunt.verbose.write 'getSheet...'
         grunt.log.debug "#{JSON.stringify r.body}..."
-        if not r.body then grunt.log.error 'empty'
-        else if not f.opts.saveJson then grunt.file.write f.dest, r.body
-        else
+        out = r.body
+        if f.opts.saveJson
           grunt.log.write 'csv2json...'
+          out = ''
           arr = JSON.parse csv2json r.body
           if f.opts.typeDetection
             grunt.log.write 'detect...'
@@ -173,9 +173,15 @@ module.exports = (grunt) ->
             convertFields arr, f.opts.typeMapping
           if f.opts.prettifyJson
             grunt.log.write 'prettify...'
-            grunt.file.write f.dest, JSON.stringify arr, null, 2
-          else grunt.file.write f.dest, JSON.stringify arr
-        grunt.log.ok()
+            out = JSON.stringify arr, null, 2
+          else out = JSON.stringify arr
+        if f.opts.wrap
+          grunt.log.write 'wrap...'
+          out = f.opts.wrap out
+        if out
+          grunt.file.write f.dest, out
+          grunt.log.ok()
+        else grunt.log.error 'empty'
         # continue
         if files.length then next files.shift()
         else done true
