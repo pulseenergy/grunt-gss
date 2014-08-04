@@ -101,9 +101,10 @@ module.exports = (grunt) ->
                 if toType(type) is 'function'
                   row[col] = type val, row
                 else if toType(val) isnt type
-                  if type is 'array'
-                    if val.indexOf(',') isnt -1 then row[col] = val.split ','
-                    else row[col] = if val then [val] else []
+                  if type is 'array' then row[col] =
+                    if not val then []
+                    else if val.indexOf(',') isnt -1 then val.split ','
+                    else [val]
                   else if type is 'boolean' then row[col] = rxTrue.test val
                   else if type is 'number' then row[col] = parseFloat val
                   else if type is 'undefined' then delete row[col]
