@@ -4,10 +4,6 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-coffee'
 
   grunt.initConfig
-    coffee:
-      compile:
-        files:
-          'tasks/gss.js': 'src/gss.coffee'
     gss:
       example:
         options:
