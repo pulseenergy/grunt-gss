@@ -1,4 +1,4 @@
-# grunt-gss v1.0.0
+# grunt-gss v1.0.1
 
 > Save your Google Spreadsheets as CSV or JSON.
 
@@ -148,7 +148,7 @@ col1,col2,col3,col4
 
 ## Release History
 
- * 2014-08-04   v1.0.0   Migrate to new `googleapis` and refactor
+ * 2014-08-04   v1.0.1   Migrate to new `googleapis` and refactor
  * 2014-07-24   v0.6.0   Add option "wrap" to process output before save, and [pull request #3](https://github.com/h0ward/grunt-gss/pull/3)
  * 2014-07-19   v0.5.1   Create `col` on the go by `type` callback
  * 2014-07-19   v0.5.0   Add type conversion callback. Remove 2d array support
