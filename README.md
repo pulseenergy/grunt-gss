@@ -1,4 +1,4 @@
-# grunt-gss v0.6.0
+# grunt-gss v1.0.0
 
 > Save your Google Spreadsheets as CSV or JSON.
 
@@ -43,94 +43,112 @@ A handy tool for [CouchDB](http://couchdb.apache.org/#download)-backed apps like
 
 ### Task Options
  1. `clientId` and `clientSecret` are from your Google API key
- * `saveJson` set to true to save as JSON, otherwise CSV is saved
- * `prettifyJson` works for JSON format only
- * `typeDetection` apply one of these: `parseInt`, `parseFloat`, or `split(',')`
- * `typeMapping` an object containing `col:type` mappings. Possible types are:
-  * array - split value by ',', and for those who wanted multi dimension support, use callback
-  * number - `parseInt` if the value consists only numbers, and `parseFloat` if any `,`
+ * `json` set true to save as JSON, otherwise raw CSV is saved
+ * `prettify` works for JSON format only, 2 spaces indention
+ * ~~typeDetection apply one of these: parseInt, parseFloat, or split(',')~~ `Removed since v1.0.0`
+ * `mapping` an object containing `col:type` mappings. Possible types are:
+  * array - `split(",")`
+  * number - `parseFloat`
   * string - `toString()`
-  * undefined - field and value will be removed from result
-  * or a callback function accepting `(val, rowObj)` and returning whatever can be parsed by JSON.parse
+  * undefined - `delete row[col]`
+  * or a callback function accepting `(val, row)` and returning whatever can be parsed by `JSON.parse`
  * `wrap` output string will be passed to this callback and the return will be saved
 
-*Note 1: If both `typeDetection` and `typeMapping` are `true`, `typeDetection` will be executed first, and followed by `typeMapping` overriding the outcome. That is, value passing to`typeMapping` callback may not be `string`.*
+~~*Note 1: If both typeDetection and typeMapping are true, typeDetection will be executed first, and followed by typeMapping overriding the outcome. That is, value passing totypeMapping callback may not be string.*~~ `Removed since v1.0.0`
 
-*Note 2: It a `col` of `typeMapping` is not found in the CSV at all, and `type` is a callback funtion, it will be called with `(rowObj)`, and save to output if return value is not `undefined`.*
+~~*Note 2: It a col of typeMapping is not found in the CSV at all, and type is a callback funtion, it will be called with (rowObj), and save to output if return value is not undefined.*~~ `Removed since v1.0.0`
 
 
-### The Task
-Three ways to setup file mappings. Will take [these sheets](
-  // https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1369557937) as examples.
-
-#### Example 1
+#### The Task
+Demo is setup with [this sheets](https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1369557937).
 ```coffeescript
-grunt.initConfig
-  gss:
-    example1:
-      options:
-        clientId: '785010223027.apps.googleusercontent.com'
-        clientSecret: 'nwQ2UedRysgbNZl6jE3I77Ji'
-        saveJson: true
-        prettifyJson: true
-        typeDetection: true
-        typeMapping:
-          col1: 'string'
-          col2: 'undefined'
-          # make it 2D, `rowObj` is added @v0.5.1
-          col4: (val, rowObj) ->
-            # typeDetection is true, value may already be spited into array
-            if not val.join then val.split '|'
-            else val.join(',').split('|').map (v) -> v.split ','
-          # v0.5.1
-          colNotExist: (rowObj) -> JSON.stringify rowObj
-          colNotExistEvenInOutput: (rowObj) -> undefined
-      files:
-        # local save path : link to your worksheet
-        'Sheet1.json': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1428256717'
-        'Sheet2.json': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1369557937'
+gss:
+  example:
+    options:
+      # from your Google API key
+      clientId: '785010223027.apps.googleusercontent.com'
+      clientSecret: 'nwQ2UedRysgbNZl6jE3I77Ji'
+      json: true # json or csv
+      prettify: true # available if options.json
+    files: [
+        options:
+          mapping: # available if options.json
+            col1: 'array'
+            col2: 'number'
+            col3: 'string'
+            col4: 'undefined'
+            col5: (val, row) ->
+              # 2d array
+              val.split('|').map (v) -> v.split ','
+            colNotExist: (val, row) ->
+              # val is undefined, and since this is the LAST mapping entry,
+              # the row obj passed in has already been converted accordingly
+              # {col1:["1","2"],col2:123,col3:"string",col5:[["1a","1b"],["2a","2b"]]}
+              JSON.stringify row
+          wrap: (out) ->
+            # grunt.log.error out
+            out
+        dest: 'test/Sheet1.json'
+        src: 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1428256717'
+      ,
+        options:
+          # if false, all other options will be ignored
+          json: false
+        dest: 'test/Sheet2.csv'
+        src: 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1369557937'
+    ]
 ```
 
-#### Example 2
-```coffeescript
-example2:
-  options:
-    clientId: '785010223027.apps.googleusercontent.com'
-    clientSecret: 'nwQ2UedRysgbNZl6jE3I77Ji'
-    wrap: (str) -> 'save me instead'
-  files:
-    'Sheet1.csv': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1428256717',
-    'Sheet2.csv': 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=1369557937',
-    # empty file will *NOT* be saved
-    'Sheet3.csv': 'https://docs.google.com/spreadsheet/ccc?key=18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ#gid=295788079'
+#### Output Sheet1.json
+```javascript
+[
+  {
+    "col1": [
+      "1",
+      "2"
+    ],
+    "col2": 123,
+    "col3": "string",
+    "col5": [
+      [
+        "1a",
+        "1b"
+      ],
+      [
+        "2a",
+        "2b"
+      ]
+    ],
+    "colNotExist": "{\"col1\":[\"1\",\"2\"],\"col2\":123,\"col3\":\"string\",\"col5\":[[\"1a\",\"1b\"],[\"2a\",\"2b\"]]}"
+  },
+  {
+    "col1": [
+      "element1",
+      "element2"
+    ],
+    "col2": 24.777,
+    "col3": "string2222",
+    "col5": [
+      [
+        "3",
+        "4"
+      ]
+    ],
+    "colNotExist": "{\"col1\":[\"element1\",\"element2\"],\"col2\":24.777,\"col3\":\"string2222\",\"col5\":[[\"3\",\"4\"]]}"
+  }
+]
 ```
 
-#### Example 3
-```coffeescript
-products3:
-  options:
-    clientId: '785010223027.apps.googleusercontent.com'
-    clientSecret: 'nwQ2UedRysgbNZl6jE3I77Ji'
-    saveJson: true
-    prettifyJson: true
-    typeDetection: true
-    typeMapping:
-      col1: 'string'
-      col4: 'array'
-  files: [
-      dest: 'Sheet3.json'
-      src: 'https://docs.google.com/spreadsheets/d/18DpYlL7ey3OTbXnTeDl82wD4ISq6iU2Gv5wCQjJsMuQ/edit#gid=295788079'
-      # for this entry the options will be a copy of above one and extended by its own set below
-      options:
-        prettifyJson: false
-        typeMapping:
-          col1: 'number'
-  ]
+#### Output Sheet1.json
+```csv
+col1,col2,col3,col4
+234,sheet,yes,no
 ```
 
 
 ## Release History
 
+ * 2014-08-04   v1.0.0   Migrate to new `googleapis` and refactor
  * 2014-07-24   v0.6.0   Add option "wrap" to process output before save, and [pull request #3](https://github.com/h0ward/grunt-gss/pull/3)
  * 2014-07-19   v0.5.1   Create `col` on the go by `type` callback
  * 2014-07-19   v0.5.0   Add type conversion callback. Remove 2d array support
