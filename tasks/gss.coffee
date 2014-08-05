@@ -112,7 +112,7 @@ module.exports = (grunt) ->
                     else if val.indexOf(',') isnt -1 then val.split ','
                     else [val]
                   else if type is 'boolean' then row[col] = rxTrue.test val
-                  else if type is 'number' then row[col] = parseFloat val
+                  else if type is 'number' then row[col] = parseFloat val or 0
                   else if type is 'undefined' then delete row[col]
 
           # prettify
