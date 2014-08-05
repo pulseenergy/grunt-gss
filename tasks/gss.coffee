@@ -18,6 +18,7 @@ module.exports = (grunt) ->
 
   _sheets = {}
   getSheet = (auth, file, gid, callback) ->
+    grunt.verbose.write 'export...'
     uri = file['exportLinks']['text/csv'] + '&gid=' + gid
     if not _sheets[uri]
       headers = Authorization: "Bearer #{auth.credentials.access_token}"
@@ -30,6 +31,7 @@ module.exports = (grunt) ->
 
   _files = {}
   getFile = (auth, fileId, callback) ->
+    grunt.verbose.write 'drive...'
     if not _files[fileId]
       drive = google.drive {version: 'v2', auth}
       drive.files.get {fileId}, (err, file) ->
@@ -41,6 +43,7 @@ module.exports = (grunt) ->
 
   _auths = {}
   getAuth = (id, secret, redirect, access_type, scope, callback) ->
+    grunt.verbose.write 'auth...'
     if not _auths[id]
       client = _auths[id] = new google.auth.OAuth2 id, secret, redirect
       getAccessToken client.generateAuthUrl({access_type, scope}), (code) ->
@@ -54,6 +57,7 @@ module.exports = (grunt) ->
     else callback _auths[id]
 
   getAccessToken = (url, callback) ->
+    grunt.verbose.write 'token...'
     open url
     server = http.createServer (req, rep) ->
       rep.end()
@@ -78,15 +82,17 @@ module.exports = (grunt) ->
       gid = matches[2]
       opts = extend {}, data.options, file.options or {}
 
+      grunt.log.write "Processing #{file.dest}..."
       getCsv opts.clientId, opts.clientSecret, fileId, gid, (out) ->
 
+        # json
         if opts.json
-
-          # json
+          grunt.log.write 'parse...'
           out = JSON.parse csv2json out
 
           # mapping
           if opts.mapping
+            grunt.log.write 'map...'
             cols = []
             types = []
             for col, type of opts.mapping
@@ -106,17 +112,24 @@ module.exports = (grunt) ->
                     else if val.indexOf(',') isnt -1 then val.split ','
                     else [val]
                   else if type is 'boolean' then row[col] = rxTrue.test val
-                  else if type is 'number' then row[col] = parseFloat val
+                  else if type is 'number' then row[col] = parseFloat val or 0
                   else if type is 'undefined' then delete row[col]
 
           # prettify
-          if opts.json and opts.prettify then out = JSON.stringify out, null, 2
+          if opts.json and opts.prettify
+            grunt.log.write 'prettify...'
+            out = JSON.stringify out, null, 2
 
         # wrap
-        if toType(opts.wrap) is 'function' then out = opts.wrap out
+        if toType(opts.wrap) is 'function'
+          grunt.log.write 'wrap...'
+          out = opts.wrap out
 
         # write
+        grunt.log.write 'write...'
         grunt.file.write file.dest, out
+
+        grunt.log.ok()
 
         # loop
         if not files.length then done true
