@@ -1,7 +1,6 @@
 module.exports = (grunt) ->
 
   grunt.loadTasks 'tasks'
-  grunt.loadNpmTasks 'grunt-contrib-coffee'
 
   grunt.initConfig
     gss:

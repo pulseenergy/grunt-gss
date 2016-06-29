@@ -26,8 +26,6 @@
   "dependencies": {
     "deep-extend": "^0.2.11",
     "googleapis": "^1.0.4",
-    "grunt": "^0.4.5",
-    "grunt-contrib-coffee": "^0.10.1",
     "open": "0.0.5",
     "request": "^2.39.0"
   },
@@ -42,5 +40,8 @@
     "couchapp",
     "json",
     "csv"
-  ]
+  ],
+  "devDependencies": {
+    "grunt": "^1.0.1"
+  }
 }
